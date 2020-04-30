@@ -76,7 +76,7 @@ class UfoDiff(object):
 
 
 if __name__ == "__main__":
-    diff = 5310000
+    diff = 5310440.537
     print(UfoDiff.get_hash_rate_by_diff(diff, 60, 'G'))
     nbits = 0x1b0328c4
     print(UfoDiff.get_hash_rate_by_nbits(nbits, 60, 'G'))
