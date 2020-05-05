@@ -24,6 +24,10 @@ class DevelopmentConfig(Config):
     DB_USE_UNICODE = True
     DB_CHARSET = 'utf8'
 
+    @staticmethod
+    def init_app(app):
+        pass
+
 
 class ProductionConfig(Config):
     LOG_BACKTRACE = False
@@ -36,6 +40,10 @@ class ProductionConfig(Config):
     DB_PASSWORD = ''
     DB_USE_UNICODE = ''
     DB_CHARSET = ''
+
+    @staticmethod
+    def init_app(app):
+        pass
 
 
 config = {
