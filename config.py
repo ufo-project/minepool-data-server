@@ -16,7 +16,7 @@ class DevelopmentConfig(Config):
     LOG_BACKTRACE = True
     LOG_LEVEL = 'DEBUG'
 
-    DB_HOST = '127.0.0.1'
+    DB_HOST = '192.168.2.122'
     DB_PORT = 3306
     DB_NAME = 'test'
     DB_USER = 'root'

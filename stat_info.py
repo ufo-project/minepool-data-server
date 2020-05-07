@@ -8,7 +8,8 @@ import gevent
 import leveldb
 import __init__
 from loguru import logger
-from utils import get_format_date
+from utils import get_format_date, get_format_datetime
+from model import TblStatInfoDetail30m
 
 
 class ShareInfo(object):
@@ -122,12 +123,14 @@ def statistics_task():
             del TotalStatInfo30Min.total_info_map[i]
 
         if time.time() > DetailStatInfo1Min.period_end_timestamp:
+            logger.debug("period 1 minute...")
             # insert to leveldb
             ldb_name_new = get_format_date()
             if ldb_name_new != __init__.ldb_name:
                 __init__.ldb_name = ldb_name_new
                 __init__.ldb = leveldb.LevelDB(__init__.ldb_name)
 
+            logger.debug("batch insert %d records to leveldb..." % len(DetailStatInfo1Min.stat_info_map))
             batch = leveldb.WriteBatch()
             for k, v in DetailStatInfo1Min.stat_info_map.items():
                 __init__.ldb.Put("-".join([k, str(DetailStatInfo1Min.period_start_timestamp)]), v.to_json())
@@ -139,7 +142,22 @@ def statistics_task():
             DetailStatInfo1Min.stat_info_map = {}
 
         if time.time() > DetailStatInfo30Min.period_end_timestamp:
+            logger.debug("period 30 minute...")
             # insert to mysql
+            logger.debug("batch insert %d records to mysql..." % len(DetailStatInfo30Min.stat_info_map))
+            data_list = []
+            for k, v in DetailStatInfo30Min.stat_info_map:
+                l = k.split(".")
+                d = {
+                    "uname": l[0],
+                    "worker": l[1],
+                    "totaldiff": v.total_diff,
+                    "validcount": v.valid_count,
+                    "invalidcount": v.invalid_count,
+                    "periodtime": get_format_datetime(DetailStatInfo30Min.period_start_timestamp)
+                }
+                data_list.append(d)
+            TblStatInfoDetail30m.insert_many(data_list).execute()
 
             t = time.time()
             DetailStatInfo30Min.period_start_timestamp = int(t) / 1800 * 1800

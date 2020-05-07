@@ -41,4 +41,3 @@ def on_new_share(share_obj):
     TotalStatInfo30Min.add_share_info(ShareInfo(user_name, worker, share_diff, valid))
     DetailStatInfo1Min.add_share_info(ShareInfo(user_name, worker, share_diff, valid))
     DetailStatInfo30Min.add_share_info(ShareInfo(user_name, worker, share_diff, valid))
-
