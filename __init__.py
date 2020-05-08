@@ -9,6 +9,7 @@ from config import config
 from loguru import logger
 from utils import get_format_date
 from model import database_proxy
+from bp import bp
 import logging
 import leveldb
 
@@ -55,3 +56,6 @@ def create_app(config_name):
     Application.ldb = leveldb.LevelDB(Application.ldb_name)
 
     Application.app = app
+
+    Application.app.register_blueprint(bp)
+

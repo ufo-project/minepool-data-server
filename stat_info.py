@@ -163,7 +163,7 @@ def statistics_task():
                          % (totaldiff, hashrate))
             TblStatInfoTotal30m.create(totaldiff=totaldiff, hashrate="%.08f" % hashrate, validcount=validcount,
                                        invalidcount=invalidcount,
-                                       periodtime=get_format_datetime(TotalStatInfo30Min.period_start_timestamp))
+                                       periodtime=get_format_datetime(TotalStatInfo30Min.period_end_timestamp))
 
             t = time.time()
             TotalStatInfo30Min.period_start_timestamp = int(t) // 1800 * 1800
@@ -203,7 +203,7 @@ def statistics_task():
                     "totaldiff": v.total_diff,
                     "validcount": v.valid_count,
                     "invalidcount": v.invalid_count,
-                    "periodtime": get_format_datetime(DetailStatInfo30Min.period_start_timestamp)
+                    "periodtime": get_format_datetime(DetailStatInfo30Min.period_end_timestamp)
                 }
                 data_list.append(d)
             if len(data_list) > 0:
