@@ -2,7 +2,8 @@
 # encoding: utf-8
 
 from peewee import *
-from __init__ import db
+
+database_proxy = DatabaseProxy()
 
 
 class UnknownField(object):
@@ -11,7 +12,8 @@ class UnknownField(object):
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        database = database_proxy
+        pass
 
 
 class TblStatInfoDetail30m(BaseModel):
@@ -25,5 +27,18 @@ class TblStatInfoDetail30m(BaseModel):
 
     class Meta:
         table_name = 'tbl_stat_info_detail_30m'
+
+
+class TblStatInfoTotal30m(BaseModel):
+    id = BigAutoField()
+    totaldiff = DecimalField()
+    hashrate = DecimalField()
+    validcount = BigIntegerField()
+    invalidcount = BigIntegerField()
+    periodtime = DateTimeField()
+
+    class Meta:
+        table_name = 'tbl_stat_info_total_30m'
+
 
 
