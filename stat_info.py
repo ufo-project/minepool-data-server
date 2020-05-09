@@ -110,7 +110,6 @@ def stat_info_init():
     t = time.time()
 
     # TotalStatInfo30Min
-
     TotalStatInfo30Min.period_start_timestamp = int(t) // 1800 * 1800
     TotalStatInfo30Min.period_end_timestamp = (int(t) // 1800 + 1) * 1800
     TotalStatInfo30Min.total_info_map = {}
@@ -121,7 +120,6 @@ def stat_info_init():
     DetailStatInfo1Min.stat_info_map = {}
 
     # DetailStatInfo30Min
-
     DetailStatInfo30Min.period_start_timestamp = int(t) // 1800 * 1800
     DetailStatInfo30Min.period_end_timestamp = (int(t) // 1800 + 1) * 1800
     DetailStatInfo30Min.stat_info_map = {}
