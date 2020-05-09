@@ -8,7 +8,7 @@ import json
 from utils import get_format_datetime
 from model import TblStatInfoTotal30m
 from difficulty import UfoDiff
-from stat_info import TotalStatInfo30Min
+from stat_info import TotalStatInfo30Min, DetailStatInfo30Min
 
 
 bp = Blueprint('', __name__, url_prefix='/')
@@ -38,7 +38,7 @@ def poolinfo30m():
 
     return json.dumps({
         "sharesdiff": totaldiff,
-        "hashrate": "%.06f MHash/s" % hashrate,
+        "hashrate": "%.06f MHash/s" % (hashrate / 1000 / 1000),
         "validcount": validcount,
         "invalidcount": invalidcount
     })
@@ -69,4 +69,38 @@ def poolstat24h():
             }
         )
     return json.dumps(stat_24h_list)
+
+
+@bp.route('/minerinfo30m/<query_name>', methods=('GET', 'POST'))
+def minerinfo30m(query_name):
+    totaldiff = 0.0
+    validcount = 0
+    invalidcount = 0
+
+    for k, v in DetailStatInfo30Min.stat_info_map.items():
+        l = k.split('.', 1)
+        if query_name == k or query_name == l[0] or query_name == l[1]:
+            totaldiff += v.total_diff
+            validcount += v.valid_count
+            invalidcount += v.invalid_count
+
+    # from period start timestamp to query timestamp
+    t1 = DetailStatInfo30Min.period_start_timestamp
+    t2 = int(time.time())
+    t = t2 - t1
+    if t <= 0:
+        t = 1800
+    hashrate = UfoDiff.get_hash_rate_by_diff(totaldiff, t, None)
+
+    return json.dumps({
+        "sharesdiff": totaldiff,
+        "hashrate": "%.06f MHash/s" % (hashrate / 1000 / 1000),
+        "validcount": validcount,
+        "invalidcount": invalidcount
+    })
+
+
+
+
+
 

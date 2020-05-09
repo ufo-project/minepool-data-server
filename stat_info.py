@@ -179,7 +179,7 @@ def statistics_task():
             if len(DetailStatInfo1Min.stat_info_map) > 0:
                 batch = leveldb.WriteBatch()
                 for k, v in DetailStatInfo1Min.stat_info_map.items():
-                    Application.ldb.Put("-".join([k, str(DetailStatInfo1Min.period_start_timestamp)]).encode(),
+                    Application.ldb.Put("-".join([k, str(DetailStatInfo1Min.period_end_timestamp)]).encode(),
                                         v.to_json().encode())
                 Application.ldb.Write(batch, sync=True)
 
