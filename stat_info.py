@@ -11,6 +11,7 @@ from loguru import logger
 from utils import get_format_date, get_format_datetime
 from model import TblStatInfoDetail30m, TblStatInfoTotal30m
 from difficulty import UfoDiff
+from shares import ReceivedConnection
 
 
 class ShareInfo(object):
@@ -212,6 +213,10 @@ def statistics_task():
             DetailStatInfo30Min.period_start_timestamp = int(t) // 1800 * 1800
             DetailStatInfo30Min.period_end_timestamp = (int(t) // 1800 + 1) * 1800
             DetailStatInfo30Min.stat_info_map = {}
+
+        if int(time.time()) % 60 == 0:
+            logger.debug("receive %d times in 1 minute..." % ReceivedConnection.received_count_per_min)
+            ReceivedConnection.received_count_per_min = 0
 
         gevent.sleep(1)
 

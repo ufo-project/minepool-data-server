@@ -94,6 +94,8 @@ def handle_connection(conn):
             c.connection.close()
             break
         c.data_cache += d
+
+        ReceivedConnection.received_count_per_min += 1
         r = on_receive_data(c)
         if not r:
             c.connection.close()

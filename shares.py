@@ -11,6 +11,8 @@ from stat_info import TotalStatInfo30Min
 
 
 class ReceivedConnection(object):
+    received_count_per_min = 0
+
     def __init__(self):
         self.connection = None
         self.data_cache = b""
