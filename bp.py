@@ -97,7 +97,7 @@ def minerinfo30m(query_name):
 
             # query time is less than period_start_timestamp + 10min
             time_inteval = int(time.time() - DetailStatInfo30Min.period_start_timestamp)
-            if time_inteval < 600:
+            if time_inteval < 30:
                 infos = TblStatInfoDetail30m.select(fn.SUM(TblStatInfoDetail30m.totaldiff).alias('totaldiffsum'),
                                                 fn.SUM(TblStatInfoDetail30m.validcount).alias('validcountsum'),
                                                 fn.SUM(TblStatInfoDetail30m.invalidcount).alias('invalidcountsum'),
@@ -125,7 +125,7 @@ def minerinfo30m(query_name):
 
             # query time is less than period_start_timestamp + 10min
             time_inteval = int(time.time() - DetailStatInfo30Min.period_start_timestamp)
-            if time_inteval < 600:
+            if time_inteval < 30:
                 infos = TblStatInfoDetail30m.select(fn.SUM(TblStatInfoDetail30m.totaldiff).alias('totaldiffsum'),
                                                     fn.SUM(TblStatInfoDetail30m.validcount).alias('validcountsum'),
                                                     fn.SUM(TblStatInfoDetail30m.invalidcount).alias('invalidcountsum'),
@@ -156,7 +156,7 @@ def minerinfo30m(query_name):
 
             # query time is less than period_start_timestamp + 10min
             time_inteval = int(time.time() - DetailStatInfo30Min.period_start_timestamp)
-            if time_inteval < 600:
+            if time_inteval < 30:
                 infos = TblStatInfoDetail30m.select(fn.SUM(TblStatInfoDetail30m.totaldiff).alias('totaldiffsum'),
                                                     fn.SUM(TblStatInfoDetail30m.validcount).alias('validcountsum'),
                                                     fn.SUM(TblStatInfoDetail30m.invalidcount).alias('invalidcountsum'),
