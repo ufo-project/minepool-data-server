@@ -3,7 +3,6 @@
 
 
 import json
-import time
 
 from stat_info import ShareInfo
 from stat_info import DetailStatInfo1Min
