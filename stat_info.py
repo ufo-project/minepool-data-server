@@ -173,7 +173,8 @@ def statistics_task():
             ldb_name_new = get_format_date()
             if ldb_name_new != Application.ldb_name:
                 Application.ldb_name = ldb_name_new
-                Application.ldb = leveldb.LevelDB(Application.ldb_name)
+                ldb_path_name = '/'.join([Application.ldb_path, Application.ldb_name])
+                Application.ldb = leveldb.LevelDB(ldb_path_name)
 
             logger.debug("batch insert %d records to leveldb..." % len(DetailStatInfo1Min.stat_info_map))
             if len(DetailStatInfo1Min.stat_info_map) > 0:

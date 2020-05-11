@@ -1,4 +1,5 @@
 CREATE DATABASE ufodb;
+USE ufodb;
 
 SET FOREIGN_KEY_CHECKS=0;
 

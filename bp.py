@@ -112,7 +112,7 @@ def minerinfo30m(query_name):
                     invalidcount += int(infos[0].invalidcountsum)
                     time_inteval += 1800
 
-            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None)) / 1000 / 1000
+            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None))
             break
         elif i == 1:
             for k, v in DetailStatInfo30Min.stat_info_map.items():
@@ -139,7 +139,7 @@ def minerinfo30m(query_name):
                     invalidcount += int(infos[0].invalidcountsum)
                     time_inteval += 1800
 
-            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None)) / 1000 / 1000
+            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None))
 
             # maybe found!
             if totaldiff != 0.0:
@@ -170,7 +170,7 @@ def minerinfo30m(query_name):
                     invalidcount += int(infos[0].invalidcountsum)
                     time_inteval += 1800
 
-            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None)) / 1000 / 1000
+            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None))
             break
 
     return json.dumps({

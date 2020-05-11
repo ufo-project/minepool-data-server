@@ -4,6 +4,7 @@
 
 class Application(object):
     db = None
+    ldb_path = None
     ldb_name = None
     ldb = None
     app = None

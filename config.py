@@ -24,6 +24,14 @@ class DevelopmentConfig(Config):
     DB_USE_UNICODE = True
     DB_CHARSET = 'utf8'
 
+    LDB_PATH = "../ldb_path"
+
+    SHARES_SERVER_IP = "0.0.0.0"
+    SHARES_SERVER_PORT = 9999
+
+    WSGI_SERVER_IP = "0.0.0.0"
+    WSGI_SERVER_PORT = 8085
+
     @staticmethod
     def init_app(app):
         pass
@@ -33,13 +41,21 @@ class ProductionConfig(Config):
     LOG_BACKTRACE = False
     LOG_LEVEL = 'INFO'
 
-    DB_HOST = ''
+    DB_HOST = '127.0.0.1'
     DB_PORT = 3306
-    DB_NAME = ''
+    DB_NAME = 'ufodb'
     DB_USER = ''
     DB_PASSWORD = ''
-    DB_USE_UNICODE = ''
-    DB_CHARSET = ''
+    DB_USE_UNICODE = True
+    DB_CHARSET = 'utf8'
+
+    LDB_PATH = "../ldb_path"
+
+    SHARES_SERVER_IP = "127.0.0.1"
+    SHARES_SERVER_PORT = 9999
+
+    WSGI_SERVER_IP = "127.0.0.1"
+    WSGI_SERVER_PORT = 8085
 
     @staticmethod
     def init_app(app):

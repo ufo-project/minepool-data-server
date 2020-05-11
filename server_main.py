@@ -56,11 +56,12 @@ def create_app(config_name):
                                                'charset': config[config_name].DB_CHARSET})
     database_proxy.initialize(Application.db)
 
+    Application.ldb_path = app.config['LDB_PATH']
     Application.ldb_name = get_format_date()
-    Application.ldb = leveldb.LevelDB(Application.ldb_name)
+    ldb_path_name = '/'.join([Application.ldb_path, Application.ldb_name])
+    Application.ldb = leveldb.LevelDB(ldb_path_name)
 
     Application.app = app
-
     Application.app.register_blueprint(bp)
 
 
@@ -102,11 +103,16 @@ def handle_connection(conn):
 if __name__ == '__main__':
     create_app('default')
     stat_info_init()
-    logger.info("Run SharesReceiverServer on 0.0.0.0:9999")
-    run_shares_receiver('0.0.0.0', 9999)
+    logger.info("Run SharesReceiverServer on [%s:%d]"
+                % (Application.app.config['SHARES_SERVER_IP'],
+                   Application.app.config['SHARES_SERVER_PORT']))
+    run_shares_receiver(Application.app.config['SHARES_SERVER_IP'], Application.app.config['SHARES_SERVER_PORT'])
     logger.info("Run statistics task")
     run_statistics_task()
-    logger.info("Run WSGIServer on 0.0.0.0:8000")
-    server = pywsgi.WSGIServer(('0.0.0.0', 8000), Application.app)
+    logger.info("Run WSGIServer on [%s:%d]"
+                % (Application.app.config['WSGI_SERVER_IP'],
+                   Application.app.config['WSGI_SERVER_PORT']))
+    server = pywsgi.WSGIServer((Application.app.config['WSGI_SERVER_IP'], Application.app.config['WSGI_SERVER_PORT']),
+                               Application.app)
     server.serve_forever()
 

@@ -3,3 +3,4 @@ peewee==3.13.1
 gevent==20.4.0
 loguru==0.4.1
 leveldb==0.201
+pymysql==0.9.3
