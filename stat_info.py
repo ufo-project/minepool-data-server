@@ -11,7 +11,14 @@ from loguru import logger
 from utils import get_format_date, get_format_datetime
 from model import TblStatInfoDetail30m, TblStatInfoTotal30m
 from difficulty import UfoDiff
-from shares import ReceivedConnection
+
+
+class ReceivedConnection(object):
+    received_count_per_min = 0
+
+    def __init__(self):
+        self.connection = None
+        self.data_cache = b""
 
 
 class ShareInfo(object):

@@ -8,14 +8,7 @@ from stat_info import ShareInfo
 from stat_info import DetailStatInfo1Min
 from stat_info import DetailStatInfo30Min
 from stat_info import TotalStatInfo30Min
-
-
-class ReceivedConnection(object):
-    received_count_per_min = 0
-
-    def __init__(self):
-        self.connection = None
-        self.data_cache = b""
+from stat_info import ReceivedConnection
 
 
 def on_receive_data(c):
