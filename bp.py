@@ -25,16 +25,12 @@ def poolinfo30m():
         validcount += v.valid_count
         invalidcount += v.invalid_count
 
-    keys = list(TotalStatInfo30Min.total_info_map.keys())
-    # time inteval
-    if len(keys) > 0:
-        t1 = min(keys)
-        t2 = max(max(keys), int(time.time()))
-        t = t2 - t1
-        if t <= 0 or t > 1800:
-            t = 1800
-    else:
+    t1 = max(int(time.time()) - 1800, TotalStatInfo30Min.first_start_timestamp)
+    t2 = int(time.time())
+    t = t2 - t1
+    if t <= 0 or t > 1800:
         t = 1800
+
     hashrate = UfoDiff.get_hash_rate_by_diff(totaldiff, t, None)
 
     return json.dumps({
@@ -75,104 +71,58 @@ def poolstat24h():
 @bp.route('/minerinfo30m/<query_name>', methods=('GET', 'POST'))
 def minerinfo30m(query_name):
     totaldiff = 0.0
-    hashrate = 0.0
     validcount = 0
     invalidcount = 0
 
-    t = int(time.time()) - 1800
-    s = get_format_datetime(t)
+    t1 = max(int(time.time()) - 1800, DetailStatInfo30Min.first_start_timestamp)
+    t2 = int(time.time())
+    t = t2 - t1
+    if t <= 0 or t > 1800:
+        t = 1800
 
     for i in range(3):
         if i == 0:
             if '.' not in query_name:
                 continue
-            l = query_name.split('.', 1)
-
-            for k, v in DetailStatInfo30Min.stat_info_map.items():
-                l2 = k.split('.', 1)
-                if l[0] == l2[0] or l[1] == l2[1]:
-                    totaldiff += v.total_diff
-                    validcount += v.valid_count
-                    invalidcount += v.invalid_count
-
-            # query time is less than period_start_timestamp + 10min
-            time_inteval = int(time.time() - DetailStatInfo30Min.period_start_timestamp)
-            if time_inteval < 30:
-                infos = TblStatInfoDetail30m.select(fn.SUM(TblStatInfoDetail30m.totaldiff).alias('totaldiffsum'),
-                                                fn.SUM(TblStatInfoDetail30m.validcount).alias('validcountsum'),
-                                                fn.SUM(TblStatInfoDetail30m.invalidcount).alias('invalidcountsum'),
-                                                TblStatInfoDetail30m.periodtime) \
-                    .where(TblStatInfoDetail30m.periodtime > s, TblStatInfoDetail30m.uname == l[0],
-                           TblStatInfoDetail30m.worker == l[1]) \
-                    .group_by(TblStatInfoDetail30m.periodtime).order_by(TblStatInfoDetail30m.periodtime).execute()
-
-                if len(infos) > 0:
-                    totaldiff += float(infos[0].totaldiffsum)
-                    validcount += int(infos[0].validcountsum)
-                    invalidcount += int(infos[0].invalidcountsum)
-                    time_inteval += 1800
-
-            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None))
+            if query_name not in DetailStatInfo30Min.stat_info_map.keys():
+                continue
+            stat_map = DetailStatInfo30Min.stat_info_map.get(query_name)
+            for v in stat_map.values():
+                totaldiff += v.total_diff
+                validcount += v.valid_count
+                invalidcount += v.invalid_count
             break
         elif i == 1:
-            for k, v in DetailStatInfo30Min.stat_info_map.items():
-                l2 = k.split('.', 1)
-
-                if l2[0] == query_name:
+            uname_list = []
+            for k in DetailStatInfo30Min.stat_info_map.keys():
+                l = k.split('.', 1)
+                if l[0] == query_name:
+                    uname_list.append(k)
+            if len(uname_list) == 0:
+                continue
+            for k in uname_list:
+                stat_map = DetailStatInfo30Min.stat_info_map.get(k)
+                for v in stat_map.values():
                     totaldiff += v.total_diff
                     validcount += v.valid_count
                     invalidcount += v.invalid_count
-
-            # query time is less than period_start_timestamp + 10min
-            time_inteval = int(time.time() - DetailStatInfo30Min.period_start_timestamp)
-            if time_inteval < 30:
-                infos = TblStatInfoDetail30m.select(fn.SUM(TblStatInfoDetail30m.totaldiff).alias('totaldiffsum'),
-                                                    fn.SUM(TblStatInfoDetail30m.validcount).alias('validcountsum'),
-                                                    fn.SUM(TblStatInfoDetail30m.invalidcount).alias('invalidcountsum'),
-                                                    TblStatInfoDetail30m.periodtime) \
-                    .where(TblStatInfoDetail30m.periodtime > s, TblStatInfoDetail30m.uname == query_name) \
-                    .group_by(TblStatInfoDetail30m.periodtime).order_by(TblStatInfoDetail30m.periodtime).execute()
-
-                if len(infos) > 0:
-                    totaldiff += float(infos[0].totaldiffsum)
-                    validcount += int(infos[0].validcountsum)
-                    invalidcount += int(infos[0].invalidcountsum)
-                    time_inteval += 1800
-
-            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None))
-
-            # maybe found!
-            if totaldiff != 0.0:
-                break
-
-        elif i == 2:
-            for k, v in DetailStatInfo30Min.stat_info_map.items():
-                l2 = k.split('.', 1)
-
-                if l2[1] == query_name:
-                    totaldiff += v.total_diff
-                    validcount += v.valid_count
-                    invalidcount += v.invalid_count
-
-            # query time is less than period_start_timestamp + 10min
-            time_inteval = int(time.time() - DetailStatInfo30Min.period_start_timestamp)
-            if time_inteval < 30:
-                infos = TblStatInfoDetail30m.select(fn.SUM(TblStatInfoDetail30m.totaldiff).alias('totaldiffsum'),
-                                                    fn.SUM(TblStatInfoDetail30m.validcount).alias('validcountsum'),
-                                                    fn.SUM(TblStatInfoDetail30m.invalidcount).alias('invalidcountsum'),
-                                                    TblStatInfoDetail30m.periodtime) \
-                    .where(TblStatInfoDetail30m.periodtime > s, TblStatInfoDetail30m.worker == query_name) \
-                    .group_by(TblStatInfoDetail30m.periodtime).order_by(TblStatInfoDetail30m.periodtime).execute()
-
-                if len(infos) > 0:
-                    totaldiff += float(infos[0].totaldiffsum)
-                    validcount += int(infos[0].validcountsum)
-                    invalidcount += int(infos[0].invalidcountsum)
-                    time_inteval += 1800
-
-            hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, time_inteval, None))
             break
-
+        else:
+            worker_list = []
+            for k in DetailStatInfo30Min.stat_info_map.keys():
+                l = k.split('.', 1)
+                if l[1] == query_name:
+                    worker_list.append(k)
+            if len(worker_list) == 0:
+                continue
+            for k in worker_list:
+                stat_map = DetailStatInfo30Min.stat_info_map.get(k)
+                for v in stat_map.values():
+                    totaldiff += v.total_diff
+                    validcount += v.valid_count
+                    invalidcount += v.invalid_count
+            break
+    hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, t, None))
     return json.dumps({
         "sharesdiff": "%.06f" % totaldiff,
         "hashrate": "%.06f MHash/s" % (hashrate / 1000 / 1000),

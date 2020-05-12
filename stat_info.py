@@ -53,6 +53,7 @@ class StatInfo(object):
 
 # total stat info (during the latest 30 minutes)
 class TotalStatInfo30Min(object):
+    first_start_timestamp = 0
     period_start_timestamp = 0
     period_end_timestamp = 0
     total_info_map = {}
@@ -74,6 +75,7 @@ class TotalStatInfo30Min(object):
 
 # 30 minutes
 class DetailStatInfo30Min(object):
+    first_start_timestamp = 0
     period_start_timestamp = 0
     period_end_timestamp = 0
     stat_info_map = {}
@@ -81,20 +83,31 @@ class DetailStatInfo30Min(object):
     @staticmethod
     def add_share_info(share_info):
         k = ".".join([share_info.user_name, share_info.worker])
-        stat_info = DetailStatInfo30Min.stat_info_map.get(k)
-        if stat_info is None:
+        miner_stat_map_30m = DetailStatInfo30Min.stat_info_map.get(k)
+        if miner_stat_map_30m is None:
+            miner_stat_map_30m = {}
             stat_info = StatInfo(share_info.share_diff if share_info.valid == "1" else 0.0,
                                  1 if share_info.valid == "1" else 0,
                                  0 if share_info.valid == "1" else 1)
+            miner_stat_map_30m[int(time.time())] = stat_info
         else:
-            stat_info.total_diff += share_info.share_diff if share_info.valid == "1" else 0.0
-            stat_info.valid_count += 1 if share_info.valid == "1" else 0
-            stat_info.invalid_count += 0 if share_info.valid == "1" else 1
-        DetailStatInfo30Min.stat_info_map[k] = stat_info
+            t = int(time.time())
+            stat_info = miner_stat_map_30m.get(t)
+            if stat_info is None:
+                stat_info = StatInfo(share_info.share_diff if share_info.valid == "1" else 0.0,
+                                     1 if share_info.valid == "1" else 0,
+                                     0 if share_info.valid == "1" else 1)
+            else:
+                stat_info.total_diff += share_info.share_diff if share_info.valid == "1" else 0.0
+                stat_info.valid_count += 1 if share_info.valid == "1" else 0
+                stat_info.invalid_count += 0 if share_info.valid == "1" else 1
+            miner_stat_map_30m[t] = stat_info
+        DetailStatInfo30Min.stat_info_map[k] = miner_stat_map_30m
 
 
 # per minute
 class DetailStatInfo1Min(object):
+    first_start_timestamp = 0
     period_start_timestamp = 0
     period_end_timestamp = 0
     stat_info_map = {}
@@ -118,16 +131,19 @@ def stat_info_init():
     t = time.time()
 
     # TotalStatInfo30Min
+    TotalStatInfo30Min.first_start_timestamp = int(t)
     TotalStatInfo30Min.period_start_timestamp = int(t)
     TotalStatInfo30Min.period_end_timestamp = (int(t) // 1800 + 1) * 1800
     TotalStatInfo30Min.total_info_map = {}
 
     # DetailStatInfo1Min
+    DetailStatInfo1Min.first_start_timestamp = int(t)
     DetailStatInfo1Min.period_start_timestamp = int(t)
     DetailStatInfo1Min.period_end_timestamp = (int(t) // 60 + 1) * 60
     DetailStatInfo1Min.stat_info_map = {}
 
     # DetailStatInfo30Min
+    DetailStatInfo30Min.first_start_timestamp = int(t)
     DetailStatInfo30Min.period_start_timestamp = int(t)
     DetailStatInfo30Min.period_end_timestamp = (int(t) // 1800 + 1) * 1800
     DetailStatInfo30Min.stat_info_map = {}
@@ -153,16 +169,12 @@ def statistics_task():
                 validcount += v.valid_count
                 invalidcount += v.invalid_count
 
-            keys = list(TotalStatInfo30Min.total_info_map.keys())
-            # time inteval
-            if len(keys) > 0:
-                t1 = min(keys)
-                t2 = max(keys)
-                t = t2 - t1
-                if t <= 0:
-                    t = 1800
-            else:
+            t1 = TotalStatInfo30Min.period_start_timestamp
+            t2 = int(time.time())
+            t = t2 - t1
+            if t <= 0:
                 t = 1800
+
             hashrate = UfoDiff.get_hash_rate_by_diff(totaldiff, t, None)
 
             logger.debug("insert 30 minutes total info, totaldiff: [%.08f], hashrate: [%.08f]..."
@@ -197,19 +209,33 @@ def statistics_task():
             DetailStatInfo1Min.period_end_timestamp = (int(t) // 60 + 1) * 60
             DetailStatInfo1Min.stat_info_map = {}
 
+        for k, v in DetailStatInfo30Min.stat_info_map.items():
+            need_to_remove = [t for t in v.keys() if t < time.time() - 1800]
+            for i in need_to_remove:
+                del v[i]
+            DetailStatInfo30Min.stat_info_map[k] = v
+
         if time.time() > DetailStatInfo30Min.period_end_timestamp:
             logger.debug("period 30 minute [DetailStatInfo30Min]...")
             # insert to mysql
             logger.debug("batch insert %d records to mysql..." % len(DetailStatInfo30Min.stat_info_map))
             data_list = []
-            for k, v in DetailStatInfo30Min.stat_info_map.items():
+            for k, stat_info_map in DetailStatInfo30Min.stat_info_map.items():
+                totaldiff = 0.0
+                validcount = 0
+                invalidcount = 0
+                for v in stat_info_map.values():
+                    totaldiff += v.total_diff
+                    validcount += v.valid_count
+                    invalidcount += v.invalid_count
+
                 l = k.split(".")
                 d = {
                     "uname": l[0],
                     "worker": l[1],
-                    "totaldiff": v.total_diff,
-                    "validcount": v.valid_count,
-                    "invalidcount": v.invalid_count,
+                    "totaldiff": totaldiff,
+                    "validcount": validcount,
+                    "invalidcount": invalidcount,
                     "periodtime": get_format_datetime(DetailStatInfo30Min.period_end_timestamp)
                 }
                 data_list.append(d)
@@ -219,7 +245,6 @@ def statistics_task():
             t = time.time()
             DetailStatInfo30Min.period_start_timestamp = int(t) // 1800 * 1800
             DetailStatInfo30Min.period_end_timestamp = (int(t) // 1800 + 1) * 1800
-            DetailStatInfo30Min.stat_info_map = {}
 
         if int(time.time()) % 60 == 0:
             logger.debug("receive %d times in 1 minute..." % ReceivedConnection.received_count_per_min)
