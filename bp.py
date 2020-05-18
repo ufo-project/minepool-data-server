@@ -70,6 +70,12 @@ def poolstat24h():
 
 @bp.route('/minerpower30mlist', methods=('GET', 'POST'))
 def minerpower30mlist():
+    t1 = max(int(time.time()) - 1800, DetailStatInfo30Min.first_start_timestamp)
+    t2 = int(time.time())
+    t = t2 - t1
+    if t <= 0 or t > 1800:
+        t = 1800
+
     minerpower30m_map = {}
     for k, stat_map in DetailStatInfo30Min.stat_info_map.items():
         totaldiff = 0.0
@@ -79,7 +85,7 @@ def minerpower30mlist():
             totaldiff += v.total_diff
             validcount += v.valid_count
             invalidcount += v.invalid_count
-        hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, 1800, None))
+        hashrate = float(UfoDiff.get_hash_rate_by_diff(totaldiff, t, None))
         minerpower30m_map[k] = hashrate
     return json.dumps(minerpower30m_map)
 
