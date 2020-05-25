@@ -14,12 +14,12 @@ virtualenv -p /usr/bin/python3 env-py3
 cd env-py3
 source bin/activate
 
+cd ..
 pip install -r requirements.txt
 ```
 
 # Run data server
 
 ```
-cd ..
 python server_main.py
 ```
