@@ -5,7 +5,7 @@ Data server for mining pool
 # Install requirement
 
 ```
-sudo apt install python3 python3-venv virtualenv git
+sudo apt install python3 python3-dev python3-venv virtualenv git
 
 git clone https://github.com/ufo-project/minepool-data-server.git
 cd minepool-data-server
